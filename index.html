@@ -75,7 +75,12 @@ body.lock #fx{z-index:20}
 .replay[hidden]{display:none}
 .mute{position:fixed;left:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:30;width:42px;height:42px;padding:0;font-size:18px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);background:var(--glass);backdrop-filter:blur(8px);color:var(--text);border-radius:50%;cursor:pointer}
 .mute[hidden]{display:none}
-.ka p{margin:12px 0;opacity:0;animation:sin .8s both;font-size:clamp(17px,4vw,24px);color:var(--text)}
+.ka p{margin:12px 0;opacity:0;transform:translateY(14px) scale(.96);transition:opacity .45s,transform .45s;font-size:clamp(17px,4vw,24px);color:var(--text)}
+.ka p.on{opacity:1;transform:none}
+.w{display:inline-block;opacity:0;transform:translateY(14px) scale(.85);transition:opacity .35s,transform .35s cubic-bezier(.2,1.6,.4,1)}
+.w.on{opacity:1;transform:none}
+#scene.beat{animation:bp .3s ease-out}
+@keyframes bp{0%{transform:scale(1.05)}100%{transform:scale(1)}}
 .np{position:absolute;top:calc(16px + env(safe-area-inset-top,0px));left:16px;font-size:13px;color:var(--muted);border:1px solid var(--line);background:var(--glass);border-radius:999px;padding:8px 14px;max-width:60vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 </style>
 </head>
@@ -257,33 +262,82 @@ tick();setInterval(tick,1000);
    (không cần nữa: toàn bộ danh sách YT bên dưới được phát ngẫu nhiên cho mọi người) */
 /* DANH SÁCH NHẠC NỀN (ID YouTube): thêm ID mới vào đây, sẽ tự phát ngẫu nhiên nối tiếp */
 const YT=["CXnmYqCoiIc","YphV1BeMDFg","IxQxtHcGSQs","gDhfJ7EQsnY","9acdV43Xb-s","MlpM8M3EaXI"].map(id=>({yt:id,t:"Nhạc nền"}));
+/* MỖI NGƯỜI MỘT KỊCH BẢN RIÊNG (v = nội dung các cảnh video, wishes = bộ câu chúc, mỗi lần mở bốc ngẫu nhiên 1 câu).
+   Không có câu nào dùng chung giữa các người. Ký hiệu: {y}=chị/bạn · {Y}=Chị/Bạn · {me}=em/mình · {Me}=Em/Mình · {n}=tên
+   <em>…</em> = cụm hot trend (tô gradient). */
 const ROSTER=[
- {n:"Nhung",p:"Hành chính nhân sự",wishes:[
+ {n:"Nhung",p:"Hành chính nhân sự",
+  v:{hi:{h:"Nhung ơi, <em>ngôi sao của phòng nhân sự</em> đây rồi ✨",p:"{Me} có vài lời riêng muốn gửi {y} nhân ngày 20/10."},
+     meet:{h:"{Me} nhớ lần đầu trao đổi với {y} qua <em>Việc Làm Chữ S</em>",p:"Hồ sơ gọn gàng, trả lời nhanh, đúng kiểu người làm nhân sự mà {me} nể."},
+     role:{h:"Người giữ cho mọi thứ <em>chạy trơn tru</em> nhưng ít khi được khen",p:"Hôm nay {me} khen thay cả team: {y} làm tốt lắm."},
+     ka:["Nhung xịn xò con bò, hồ sơ nào cũng gọn như nhung 🗂️","Chill phết luôn, lịch họp thưa thớt, deadline dễ thương 🌿","U là trời, {y} cười lên là cả phòng sáng bừng 🌞","Không drama, không muộn phiền, chỉ có vibe bình yên ☕","Cưng xỉu, đáng yêu hết phần thiên hạ 💖"],
+     tr:{h:"Chúc {y} <em>slay</em>, <em>chill phết</em> và <em>cưng xỉu</em> cả năm 🔥",p:"Bộ ba hot trend {me} dành riêng cho {y}!"},
+     thanks:"Cảm ơn {y} đã luôn nhiệt tình giúp {me} mỗi khi cần giấy tờ 🌸",
+     end:{h:"Chúc {y} 20/10 thật <em>nhẹ nhàng và vui</em> 💐",p:"Hôm nay nhớ đi chơi, ăn ngon, đừng ôm việc về nhà nhé."},
+     fin:"Ngày Phụ nữ Việt Nam · Từ Xuân gửi Nhung, với lòng quý mến."},
+  wishes:[
   "chúc {y} giấy tờ gọn gàng, lịch họp thưa thớt, đồng nghiệp ai cũng <em>cưng xỉu</em>, đời <em>chill phết</em> cả năm 🗂️",
   "{me} chúc {y} <em>slay</em> mọi deadline, nhân sự ổn định, và luôn có người nhớ nói lời cảm ơn với {y} 🌷",
   "mong {y} đi làm như đi chơi: việc êm, team vui, tâm trạng <em>xịn xò con bò</em> mỗi ngày 😄",
   "chúc {y} mở điện thoại lên là thấy <em>u là trời</em>, toàn tin nhắn cảm ơn, khen thưởng, không có chuyện gấp 💌"]},
- {n:"Liên",p:"Kế toán",wishes:[
+ {n:"Liên",p:"Kế toán",
+  v:{hi:{h:"{Y} <em>Liên</em> ơi, hôm nay là ngày của {y} 🌷",p:"{Me} gửi {y} vài dòng nhỏ nhân dịp 20/10."},
+     meet:{h:"{Me} vẫn nhớ {y}, người kế toán <em>cẩn thận nhất</em> {me} từng quen nhờ Việc Làm Chữ S",p:"Con số qua tay {y} lúc nào cũng khớp, nhìn là thấy yên tâm."},
+     role:{h:"Con số không biết nói, nên {y} <em>nói thay chúng</em> bằng sự chính xác",p:"Hôm nay {me} xin khen một câu: {y} giỏi và đáng tin lắm."},
+     ka:["{Y} Liên chốt sổ êm ru, hết nước chấm luôn 🧾","Tài khoản {y} ting ting, ví căng đét mỗi ngày 💰","Đỉnh của chóp, đối chiếu một lần là khớp 📊","Mãi mận nha {y} ơi, tuổi nào cũng xinh 💸","Hôm nay không bảng biểu, chỉ có hoa và quà 🌹"],
+     tr:{h:"Chúc {y} <em>ting ting</em>, <em>hết nước chấm</em> và <em>mãi mận</em> cả năm 💸",p:"{Me} gửi {y} bộ ba hot trend dành cho dân kế toán nè!"},
+     thanks:"Cảm ơn {y} đã kiên nhẫn giải thích những điều {me} chưa hiểu về con số 🌼",
+     end:{h:"Chúc {y} 20/10 thật <em>bình yên và ngọt ngào</em> 💐",p:"Đóng sổ sớm một hôm, ăn món {y} thích rồi nghỉ ngơi thật thoải mái nhé."},
+     fin:"Ngày Phụ nữ Việt Nam · Từ em, Xuân, gửi chị Liên với lòng quý mến."},
+  wishes:[
   "{me} chúc {y} cuối tháng chốt sổ êm, số liệu khớp ngay lần đầu, còn tài khoản của riêng {y} thì <em>ting ting</em> đều đều 💰",
   "chúc {y} tháng nào cũng <em>hết nước chấm</em>: không lệch một đồng, không phải dò lại dòng nào 🧾",
   "mong {y} luôn bình yên, được khen là <em>đỉnh của chóp</em> vì cẩn thận thay cho cả đội 🌿",
   "{me} chúc {y} ví căng đét, tim đầy iu, <em>mãi mận</em> nha {y} ơi 💸"]},
- {n:"Linh",p:"Hành chính nhân sự",wishes:[
+ {n:"Linh",p:"Hành chính nhân sự",
+  v:{hi:{h:"Linh ơi, <em>cô nàng giữ nhịp</em> của đội đây rồi 💫",p:"Hôm nay {me} muốn dành riêng cho {y} một lời chúc."},
+     meet:{h:"Nhờ <em>Việc Làm Chữ S</em> mà {me} biết thêm một người dễ thương như {y}",p:"Trò chuyện với {y} lúc nào cũng nhẹ nhàng, thoải mái."},
+     role:{h:"Việc nhân sự toàn chuyện <em>nhỏ mà quan trọng</em>, và {y} làm rất có tâm",p:"{Me} thấy hết, và thấy trân trọng lắm."},
+     ka:["Linh xinh xỉu up xỉu down, ai gặp cũng thương 🌸","Gét gô cà phê, gét gô cả những ngày thứ Hai ☕","Không drama, chỉ có vibe bình yên và nụ cười 🍀","Check var cả thanh xuân, thấy {y} vẫn đỉnh nhất ✨","Hôm nay Linh là nữ chính, cả văn phòng làm khán giả 🎬"],
+     tr:{h:"Chúc {y} <em>xinh xỉu</em>, <em>gét gô</em> và <em>vibe bình yên</em> cả năm 🌿",p:"Combo hot trend vừa vặn với {y}, {me} gửi nè!"},
+     thanks:"Cảm ơn {y} vì luôn nhẹ nhàng và đáng yêu với {me} 🌼",
+     end:{h:"Chúc {y} 20/10 <em>thong thả và rực rỡ</em> 💐",p:"Ngủ nướng một chút, dạo phố một chút, và đừng nghĩ tới công việc nhé."},
+     fin:"Ngày Phụ nữ Việt Nam · Từ Xuân gửi Linh, chúc mừng nhé."},
+  wishes:[
   "chúc {y} luôn giữ nhịp cho cả đội mà vẫn được nghỉ ngơi đủ, cười thật nhiều và <em>không drama</em> nào dám làm phiền 🌸",
   "{me} chúc {y} <em>xinh xỉu up xỉu down</em>, hôm nay ai nhắn chuyện công việc cũng tự động bị chặn ✨",
   "mong {y} <em>gét gô</em> cà phê, gét gô đi chơi, và mọi điều âm thầm cố gắng đều được đền đáp xứng đáng ☕",
   "chúc {y} có <em>vibe bình yên</em> mỗi sáng thứ Hai, ít lo và có thật nhiều lý do để cười 🍀"]},
- {n:"Thuý Anh",p:"Nhân viên Headhunter",wishes:[
+ {n:"Thuý Anh",p:"Nhân viên Headhunter",
+  v:{hi:{h:"Thuý Anh ơi, <em>nữ hoàng kết nối</em> đã xuất hiện 👑",p:"{Me} có đôi lời muốn gửi riêng {y} dịp 20/10."},
+     meet:{h:"{Me} gặp {y} qua <em>Việc Làm Chữ S</em> và thấy ngay một người làm việc rất có duyên",p:"Chốt kèo nhanh, nói chuyện khéo, ai làm việc cùng cũng mến."},
+     role:{h:"Tìm đúng người cho đúng chỗ cần <em>mắt nhìn tinh</em> và cả sự kiên nhẫn",p:"{Me} nể cái duyên kết nối của {y}."},
+     ka:["Thuý Anh chốt đơn nhanh như chớp, đỉnh nóc kịch trần 🚀","Ứng viên nào cũng gật đầu, deal nào cũng thành 🤝","Flex nhẹ thôi mà cả team đã phải ngước nhìn 😎","Quẩy lên nào, hôm nay là ngày của {y}! 🎉","Bay màu deadline, ở lại với nụ cười rạng rỡ 🌟"],
+     tr:{h:"Chúc {y} <em>chốt đơn</em>, <em>flex nhẹ</em> và <em>đỉnh nóc kịch trần</em> cả năm 🔥",p:"Đúng chất dân headhunter, {me} gửi {y} nè!"},
+     thanks:"Cảm ơn {y} đã cho {me} thấy nghề kết nối người với người đẹp đến thế nào 🌸",
+     end:{h:"Chúc {y} 20/10 <em>vui hết nấc</em> 💐",p:"Hôm nay tạm gác điện thoại việc, nhận quà và đi chơi thật vui nhé."},
+     fin:"Ngày Phụ nữ Việt Nam · Từ Xuân gửi Thuý Anh, với lòng quý mến."},
+  wishes:[
   "chúc {y} ứng viên nào cũng hợp, nhà tuyển dụng nào cũng nhanh gật đầu, deal nào cũng <em>chốt đơn</em> trong một nốt nhạc 🤝",
   "{me} chúc {y} chốt thêm nhiều deal đẹp, ứng viên không “bay màu” phút chót, còn {y} thì <em>flex nhẹ</em> cả năm 😎",
   "mong {y} gặp đúng người, đúng lúc, đúng việc, kết nối nào cũng <em>đỉnh nóc kịch trần</em> 🌟",
   "chúc {y} <em>quẩy</em> hết mình cả năm, hôm nay được ngủ nướng, uống ly cà phê thật ngon và không ai nhắn việc ☕"]},
- {n:"Thương",p:"Nhân viên Headhunter",wishes:[
+ {n:"Thương",p:"Nhân viên Headhunter",
+  v:{hi:{h:"{Y} <em>Thương</em> ơi, {me} chúc mừng ngày của {y} 🌷",p:"{Me} có vài dòng nhỏ gửi riêng {y} hôm nay."},
+     meet:{h:"{Me} biết {y} nhờ <em>Việc Làm Chữ S</em> và thấy ngay {y} là người rất ấm áp",p:"{Y} luôn lắng nghe, hiểu ứng viên và cả đồng nghiệp nữa."},
+     role:{h:"Nghề của {y} là <em>nối những cơ hội</em> cho người khác, nghe thôi đã thấy đẹp rồi",p:"{Me} nể sự tinh ý và kiên nhẫn của {y} lắm."},
+     ka:["{Y} Thương quá trời quá đất, ai gặp cũng quý 🌟","Healing sau mỗi deal, tim đầy, ví cũng đầy 🌼","Green flag của cả đội, đi đâu cũng được thương 👑","Bay phấp phới cả năm, việc gì cũng thuận buồm 🍀","Hôm nay không ứng viên, chỉ có hoa và quà 💐"],
+     tr:{h:"Chúc {y} <em>healing</em>, <em>green flag</em> và <em>bay phấp phới</em> cả năm 🔥",p:"{Me} chọn riêng bộ ba này vì hợp với {y} lắm!"},
+     thanks:"Cảm ơn {y} đã luôn dịu dàng và chỉ bảo {me} nhiều điều 🌸",
+     end:{h:"Chúc {y} 20/10 thật <em>ấm áp và thảnh thơi</em> 💐",p:"{Y} nghỉ ngơi, ăn món ngon và nhận thật nhiều yêu thương nhé."},
+     fin:"Ngày Phụ nữ Việt Nam · Từ em, Xuân, gửi chị Thương với lòng quý mến."},
+  wishes:[
   "{me} chúc {y} kết nối được thật nhiều cơ hội tốt, và cơ hội đẹp nhất cũng tìm đến {y}, nghe thôi đã thấy <em>quá trời quá đất</em> luôn 🌟",
   "chúc {y} luôn <em>healing</em> sau mỗi lần chốt deal, ví đầy, tim đầy, và nụ cười lúc nào cũng rạng rỡ 🌼",
   "{me} mong {y} cả năm <em>bay phấp phới</em>, ứng viên nào cũng hợp, nhà tuyển dụng nào cũng gật đầu, việc nào cũng thuận buồm xuôi gió 🍀",
   "chúc {y} luôn là <em>green flag</em> trong mắt ứng viên và đồng nghiệp, đi đâu cũng được quý như nữ hoàng 👑"]}
 ];
+
 const $=id=>document.getElementById(id);
 const norm=s=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/\s+/g,' ').trim();
 let who=null;const PR=s=>['lien','thuong'].includes(norm(s))?'chị':'bạn';
@@ -355,7 +409,8 @@ function playItem(w,it){
       setTimeout(()=>{if(my===tok&&!ok)fb()},8000)});
     return}
   if(typeof it==='string'){
-    const my=tok,a=getAud();song=a;a.volume=.6;a.muted=muted;
+    const my=tok,a=getAud();song=a;setupAnalyser(a);
+    if(outGain){a.volume=1;a.muted=false;outGain.gain.value=muted?0:.6}else{a.volume=.6;a.muted=muted}
     const label='♪ Nhạc nền '+(MP3.indexOf(it)+1)+'/'+MP3.length;
     a.onended=()=>{if(my===tok)playItem(w,nextMP3())};
     a.onerror=()=>{if(my===tok)$('np').textContent='♪ Không tải được '+it+' (kiểm tra tên file)'};
@@ -399,8 +454,58 @@ function stopMusic(){
 }
 document.addEventListener('click',e=>{if(e.target.id!=='muteBtn')return;
   muted=!muted;e.target.textContent=muted?'🔇':'🔊';
-  if(master)master.gain.setTargetAtTime(muted?0:LEVEL,AC.currentTime,.15);if(song)song.muted=muted;ytc(muted?'mute':'unMute')});
+  if(master)master.gain.setTargetAtTime(muted?0:LEVEL,AC.currentTime,.15);if(outGain)outGain.gain.value=muted?0:.6;else if(song)song.muted=muted;ytc(muted?'mute':'unMute')});
 document.addEventListener('visibilitychange',()=>{if(!AC)return;document.hidden?AC.suspend():AC.resume()});
+
+/* ---------- Nhận nhịp (beat) từ chính file mp3 để chữ + hiệu ứng chạy theo nhạc ---------- */
+let outGain=null,beatN=0,lastBeat=0,beatHooks=[];
+const BD={an:null,buf:null,hist:[]};
+function setupAnalyser(a){
+  /* Chỉ hoạt động khi chạy qua http(s) (GitHub Pages). Mở file trực tiếp thì tự dùng nhịp dự phòng. */
+  if(BD.an||!AC||location.protocol==='file:')return;
+  try{
+    const src=AC.createMediaElementSource(a),an=AC.createAnalyser();an.fftSize=512;an.smoothingTimeConstant=.3;
+    outGain=AC.createGain();outGain.gain.value=muted?0:.6;
+    src.connect(an);an.connect(outGain);outGain.connect(AC.destination);
+    BD.an=an;BD.buf=new Uint8Array(an.frequencyBinCount);
+  }catch(e){BD.an=null;outGain=null}
+}
+function fireBeat(){
+  beatN++;lastBeat=performance.now();
+  if($('vid').hidden)return;
+  if(!reduce){
+    const s=$('scene');s.classList.remove('beat');void s.offsetWidth;s.classList.add('beat');
+    if(beatN%4===0)burst(W*(.15+Math.random()*.7),H*(.15+Math.random()*.45),beatN%16===0)}
+  beatHooks.slice().forEach(h=>{try{h(beatN)}catch(e){}})
+}
+(function beatLoop(){
+  requestAnimationFrame(beatLoop);
+  if($('vid').hidden)return;
+  const now=performance.now();
+  if(BD.an&&song&&!song.paused){
+    BD.an.getByteFrequencyData(BD.buf);
+    let e=0;for(let i=1;i<5;i++)e+=BD.buf[i];e/=4;           /* năng lượng dải trầm (trống/bass) */
+    const h=BD.hist,avg=h.length?h.reduce((a,b)=>a+b,0)/h.length:0;
+    h.push(e);if(h.length>50)h.shift();
+    if(e>avg*1.15&&e-avg>10&&e>70&&now-lastBeat>300)fireBeat();
+  }
+  if(now-lastBeat>850)fireBeat(); /* nhịp dự phòng nếu nhạc chưa có nhịp rõ */
+})();
+function onNextBeat(cb,maxWait){
+  let done=false;const hk=()=>fin();
+  const fin=()=>{if(done)return;done=true;beatHooks=beatHooks.filter(x=>x!==hk);cb()};
+  beatHooks.push(hk);setTimeout(fin,maxWait)}
+function revealOnBeat(sel,per,every,maxMs){
+  const els=[...document.querySelectorAll(sel)];let i=0,c=0;
+  const rev=n=>{for(let k=0;k<n&&i<els.length;k++)els[i++].classList.add('on')};
+  rev(per);beatHooks.push(()=>{if(++c%every===0)rev(per)});
+  setTimeout(()=>rev(els.length),maxMs)}
+function wordsHTML(h){
+  let inEm=false;const out=[];
+  h.split(/(<\/?em>)/).forEach(p=>{
+    if(p==='<em>')inEm=true;else if(p==='</em>')inEm=false;
+    else p.split(/\s+/).filter(Boolean).forEach(w=>out.push(inEm?`<span class="w"><em>${w}</em></span>`:`<span class="w">${w}</span>`))});
+  return{h:out.join(' '),n:out.length}}
 
 function gErr(m){const e=$('gErr');e.textContent=m;const b=document.querySelector('.gbox');b.classList.remove('shake');void b.offsetWidth;b.classList.add('shake')}
 function tryGate(){
@@ -414,43 +519,39 @@ $('gBtn').addEventListener('click',tryGate);
 ['gName','gPos'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter')tryGate()}));
 const fw=(c,h)=>{for(let k=0;k<c;k++)setTimeout(()=>burst(W*(.15+Math.random()*.7),H*(.15+Math.random()*.4),h&&k%2===0),k*380)};
 function play(){
-  const n=who.n,p=who.p,vid=$('vid'),sc=$('scene'),bf=$('barFill');
-  const y=PR(n),Y=y==='chị'?'Chị':'Bạn',me=y==='chị'?'em':'mình';
+  const n=who.n,vid=$('vid'),sc=$('scene'),bf=$('barFill');
+  const y=PR(n),Y=y==='chị'?'Chị':'Bạn',me=y==='chị'?'em':'mình',Me=y==='chị'?'Em':'Mình';
   vid.hidden=false;document.body.classList.add('lock');
-  const Me=me.charAt(0).toUpperCase()+me.slice(1);
-  const POS={
-   "Hành chính nhân sự":`<h3>Việc của ${y} thường <em>lặng lẽ</em>, nhưng đội nào chạy trơn tru cũng có một người giữ nhịp phía sau</h3><p>${Me} nghĩ ${y} xứng đáng được nghe lời cảm ơn nhiều hơn.</p>`,
-   "Kế toán":`<h3>Con số không biết lên tiếng, nên người giữ cho chúng <em>đúng và đủ</em> hay bị quên khen</h3><p>Hôm nay ${me} xin khen ${y} một câu: cẩn thận như vậy là giỏi lắm.</p>`,
-   "Nhân viên Headhunter":`<h3>Tìm đúng người cho đúng việc cần cả <em>sự tinh ý</em> lẫn kiên nhẫn</h3><p>${Me} nể cái duyên kết nối của ${y}.</p>`
-  };
-  const S=[
-   [3200,`<h3>Chào ${y} <em>${n}</em> 👋</h3><p>Xuân có vài lời gửi riêng ${y} nhân ngày 20/10.</p>`,()=>fw(1)],
-   [4600,`<h3>${Me} quen ${y} nhờ <em>Việc Làm Chữ S</em></h3><p>Một cái duyên nhỏ thôi, mà ${me} thấy vui và may mắn.</p>`,()=>fw(2)],
-   [5600,POS[p]||`<h3>${Y} luôn làm việc bằng <em>cả sự tử tế</em></h3>`,()=>fw(2,true)]
-  ];
-  const KA=[`${n} ơi, hôm nay xinh xỉu up xỉu down ✨`,`Slay cả ngày, deadline thấy ${y} cũng phải né 😎`,`Chill phết, vui phết, đời như phim ngôn tình 🎬`,`Hết nước chấm, đỉnh nóc kịch trần bay phấp phới 🚀`,`Ví đầy tiền, tim đầy iu, mãi mận nha ${y} ơi 💸`,`Gét gô cà phê, gét gô đi chơi, 20/10 là của ${y}! ☕`,`U là trời, ${y} cười lên là cả team sáng bừng 🌞`,`Không drama, không muộn phiền, chỉ có vibe bình yên 🌿`,`Tag ngay hội chị em, hôm nay mình flex nhẹ 💅`,`Cưng xỉu, đáng yêu hết phần thiên hạ 💖`];
-  const TR=["Slay","Chill phết","Hết nước chấm","U là trời","Gét gô","Đỉnh của chóp","Mãi mận","Xinh xỉu","Cưng xỉu"];
-  const sh=a=>a.slice().sort(()=>Math.random()-.5),pk=sh(KA).slice(0,5),tr=sh(TR).slice(0,3);
-  S.push([8000,`<div class="ka"><h3>🎤 Karaoke <em>vui vẻ</em></h3>${pk.map((l,i)=>`<p style="animation-delay:${.6+i*1.4}s">${l}</p>`).join('')}</div>`,()=>fw(4,true)]);
-  S.push([4800,`<h3>Chúc ${y} <em>${tr[0]}</em>, <em>${tr[1]}</em> và <em>${tr[2]}</em> cả năm 🔥</h3><p>Lời chúc đúng chuẩn hot trend, ${me} gửi ${y} nè!</p>`,()=>fw(3,true)]);
-  const myWish=wishFor(who,true);
-  if(myWish)S.push([7500,`<h3>${myWish}</h3>`,()=>fw(3,true)]);
+  const T=t=>(t||'').replace(/\{Y\}/g,Y).replace(/\{y\}/g,y).replace(/\{Me\}/g,Me).replace(/\{me\}/g,me).replace(/\{n\}/g,n);
+  /* kịch bản dự phòng cho người mới chưa có v */
+  const D={hi:{h:"Chào {y} <em>{n}</em> 👋",p:"{Me} có vài lời gửi riêng {y} nhân ngày 20/10."},meet:{h:"{Me} quen {y} nhờ <em>Việc Làm Chữ S</em>",p:"Một cái duyên nhỏ thôi, mà {me} thấy vui và may mắn."},role:{h:"{Y} luôn làm việc bằng <em>cả sự tử tế</em>"},
+    ka:["{n} ơi, hôm nay xinh xỉu up xỉu down ✨","Slay cả ngày, chill phết cả đêm 😎","Cưng xỉu, đáng yêu hết phần thiên hạ 💖"],tr:{h:"Chúc {y} <em>slay</em> và <em>chill phết</em> cả năm 🔥",p:"{Me} gửi {y} nè!"},
+    thanks:"Cảm ơn {y} đã cho {me} cơ hội được quen một người tử tế 🌸",end:{h:"Chúc {y} 20/10 thật <em>nhẹ nhàng và vui</em> 💐"},fin:"Ngày Phụ nữ Việt Nam · Từ Xuân, với lòng quý mến."};
+  const V=Object.assign({},D,who.v||{});
+  const sc3=(o,d,f)=>[d,`<h3>${T(o.h)}</h3>${o.p?`<p>${T(o.p)}</p>`:''}`,f];
+  const S=[sc3(V.hi,3400,()=>fw(1)),sc3(V.meet,4800,()=>fw(2)),sc3(V.role,5600,()=>fw(2,true))];
+  S.push([10000,`<div class="ka"><h3>🎤 Karaoke <em>vui vẻ</em></h3>${V.ka.map(l=>`<p>${T(l)}</p>`).join('')}</div>`,()=>{fw(4,true);revealOnBeat('.ka p',1,2,8800)}]);
+  S.push(sc3(V.tr,4800,()=>fw(3,true)));
+  const myWish=wishFor(who,true),wh=wordsHTML(myWish);
+  if(myWish)S.push([9500,`<h3>${wh.h}</h3>`,()=>{fw(3,true);revealOnBeat('#scene .w',Math.ceil(wh.n/9),1,7800)}]);
   if(who.note)S.push([5200,`<h3>${who.note}</h3>`,()=>fw(2)]);
   S.push(
-   [4800,`<h3>Cảm ơn ${y} đã cho ${me} cơ hội được quen một người <em>tử tế</em> như ${y} 🌸</h3>`,()=>fw(2)],
-   [5400,`<h3>Chúc ${y} 20/10 thật <em>nhẹ nhàng và vui</em> 💐</h3><p>Khỏe mạnh, bình an, và có thật nhiều thời gian cho những điều ${y} thích.</p>`,()=>fw(3,true)],
-   [5600,`<h3>Chúc mừng <em>20/10</em> 💖</h3><p>Ngày Phụ nữ Việt Nam · Từ Xuân, với lòng quý mến.</p>`,()=>fw(7,true)]
+   [4800,`<h3>${T(V.thanks)}</h3>`,()=>fw(2)],
+   sc3(V.end,5400,()=>fw(3,true)),
+   [5600,`<h3>Chúc mừng <em>20/10</em> 💖</h3><p>${T(V.fin)}</p>`,()=>fw(7,true)]
   );
-  let i=0,timer;
+  let i=0,timer,ended=false;
   function next(){
+    if(ended)return;
     if(i>=S.length){end();return}
+    beatHooks=[];
     const [d,h,f]=S[i++];sc.innerHTML=`<div class="s">${h}</div>`;f();
     bf.style.transition='none';bf.style.width=(i-1)/S.length*100+'%';void bf.offsetWidth;
     bf.style.transition=`width ${d}ms linear`;bf.style.width=i/S.length*100+'%';
-    timer=setTimeout(next,d);
+    timer=setTimeout(()=>onNextBeat(next,1000),d);
   }
   function end(){
-    clearTimeout(timer);vid.hidden=true;document.body.classList.remove('lock');
+    ended=true;beatHooks=[];clearTimeout(timer);vid.hidden=true;document.body.classList.remove('lock');
     $('site').style.visibility='visible';$('replayBtn').hidden=false;$('nameIn').value=who.n;$('wishText').textContent=wishFor(who);scrollTo(0,0);fw(3,true);
   }
   $('skipBtn').onclick=end;
